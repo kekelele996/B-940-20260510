@@ -76,6 +76,26 @@ INSERT INTO users (username, password_hash, email, role, status) VALUES
 INSERT INTO users (username, password_hash, email, role, status) VALUES
 ('testuser', '$2y$10$I67ZklvsKKaQxx17v95eSeP9g9oaalyVmaoJxao2CnatsuebvwNtq', 'test@tasksystem.com', 'user', 1);
 
+-- 举报表
+CREATE TABLE IF NOT EXISTS task_reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL,
+    reporter_id INT NOT NULL,
+    reason VARCHAR(100) NOT NULL,
+    description TEXT,
+    status ENUM('pending', 'resolved', 'rejected') DEFAULT 'pending',
+    handled_by INT,
+    handle_note TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (handled_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_status (status),
+    INDEX idx_task (task_id),
+    INDEX idx_reporter (reporter_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 插入示例任务
 INSERT INTO tasks (title, description, category, budget, deadline, skills, status, publisher_id) VALUES
 ('网站首页设计', '需要设计一个现代化的企业官网首页，要求简洁大气，响应式布局', '设计创意', 2000.00, DATE_ADD(CURDATE(), INTERVAL 7 DAY), '["Figma", "UI设计", "响应式设计"]', 'pending', 1),

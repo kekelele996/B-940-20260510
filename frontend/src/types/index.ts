@@ -93,6 +93,34 @@ export const TASK_CATEGORIES = [
   '其他'
 ] as const;
 
+// 举报状态
+export type ReportStatus = 'pending' | 'resolved' | 'rejected';
+
+// 举报类型
+export interface TaskReport {
+  id: number;
+  task_id: number;
+  reporter_id: number;
+  reason: string;
+  description?: string;
+  status: ReportStatus;
+  handled_by?: number;
+  handle_note?: string;
+  reporter_name?: string;
+  handler_name?: string;
+  task_title?: string;
+  task_status?: TaskStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// 举报状态显示
+export const REPORT_STATUS_MAP: Record<ReportStatus, { label: string; color: string }> = {
+  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700' },
+  resolved: { label: '已处理', color: 'bg-green-100 text-green-700' },
+  rejected: { label: '已驳回', color: 'bg-gray-100 text-gray-700' }
+};
+
 // 任务状态显示
 export const TASK_STATUS_MAP: Record<TaskStatus, { label: string; color: string }> = {
   pending: { label: '待接单', color: 'bg-gray-100 text-gray-700' },
