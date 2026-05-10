@@ -66,6 +66,26 @@ CREATE TABLE IF NOT EXISTS reviews (
     INDEX idx_reviewee (reviewee_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 举报表
+CREATE TABLE IF NOT EXISTS reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL,
+    reporter_id INT NOT NULL,
+    reason ENUM('fraud', 'illegal', 'spam', 'inappropriate', 'other') NOT NULL,
+    description TEXT,
+    status ENUM('pending', 'resolved', 'rejected') DEFAULT 'pending',
+    admin_note TEXT,
+    handled_by INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (handled_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_task (task_id),
+    INDEX idx_reporter (reporter_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 插入管理员账号 (用户名: admin, 密码: root123)
 -- 密码哈希由 password_hash('root123', PASSWORD_BCRYPT) 生成
 INSERT INTO users (username, password_hash, email, role, status) VALUES
