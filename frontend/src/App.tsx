@@ -12,6 +12,7 @@ import { Profile } from './pages/Profile';
 import { AdminLayout } from './pages/admin/Layout';
 import { AdminUsers } from './pages/admin/Users';
 import { AdminTasks } from './pages/admin/Tasks';
+import { AdminReports } from './pages/admin/Reports';
 import { useAuthStore } from './stores/auth';
 
 // 需要登录的路由保护
@@ -98,6 +99,7 @@ function App() {
               <Route index element={<Navigate to="users" replace />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="tasks" element={<AdminTasks />} />
+              <Route path="reports" element={<AdminReports />} />
             </Route>
           </Route>
         </Routes>
