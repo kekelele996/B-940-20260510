@@ -1,4 +1,4 @@
-import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review } from '../types';
+import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review, TaskReport, ReportStats } from '../types';
 
 const API_BASE = '/api';
 
@@ -151,6 +151,15 @@ export const taskApi = {
 
   getCategories: () =>
     request<ApiResponse<string[]>>('/tasks/categories'),
+
+  report: (id: number, data: { reason: string; description?: string }) =>
+    request<ApiResponse<TaskReport>>(`/tasks/${id}/report`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getReportReasons: () =>
+    request<ApiResponse<string[]>>('/reports/reasons'),
 };
 
 // 用户API
@@ -227,4 +236,39 @@ export const adminApi = {
       pending_tasks: number;
       completed_tasks: number;
     }>>('/admin/stats'),
+
+  getReports: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    return request<ApiResponse<PaginatedResponse<TaskReport>>>(`/admin/reports?${searchParams}`);
+  },
+
+  getReportById: (id: number) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}`),
+
+  resolveReport: (id: number, data?: { admin_note?: string }) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    }),
+
+  rejectReport: (id: number, data?: { admin_note?: string }) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    }),
+
+  getReportStats: () =>
+    request<ApiResponse<ReportStats>>('/admin/reports/stats'),
 };

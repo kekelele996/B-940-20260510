@@ -91,9 +91,6 @@ class AdminController
   {
     AuthMiddleware::requireAdmin();
 
-    $db = \App\Config\Database::getConnection();
-
-    // 获取统计数据
     $stats = [
       'total_users' => 0,
       'total_tasks' => 0,
@@ -101,17 +98,10 @@ class AdminController
       'completed_tasks' => 0
     ];
 
-    $stmt = $db->query("SELECT COUNT(*) as count FROM users");
-    $stats['total_users'] = (int) $stmt->fetch()['count'];
-
-    $stmt = $db->query("SELECT COUNT(*) as count FROM tasks");
-    $stats['total_tasks'] = (int) $stmt->fetch()['count'];
-
-    $stmt = $db->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'");
-    $stats['pending_tasks'] = (int) $stmt->fetch()['count'];
-
-    $stmt = $db->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'");
-    $stats['completed_tasks'] = (int) $stmt->fetch()['count'];
+    $stats['total_users'] = (int) \App\Models\Eloquent\User::count();
+    $stats['total_tasks'] = (int) \App\Models\Eloquent\Task::count();
+    $stats['pending_tasks'] = (int) \App\Models\Eloquent\Task::where('status', 'pending')->count();
+    $stats['completed_tasks'] = (int) \App\Models\Eloquent\Task::where('status', 'completed')->count();
 
     Response::success($stats);
   }

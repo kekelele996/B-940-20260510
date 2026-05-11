@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { taskApi } from '../api';
-import { Task, TASK_STATUS_MAP } from '../types';
+import { Task, TASK_STATUS_MAP, REPORT_REASONS } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/ui/Toast';
 import { Dialog } from '../components/ui/Dialog';
@@ -13,8 +13,10 @@ export const TaskDetail: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [submitContent, setSubmitContent] = useState('');
   const [reviewData, setReviewData] = useState({ rating: 5, content: '' });
+  const [reportData, setReportData] = useState({ reason: '', description: '' });
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -126,6 +128,25 @@ export const TaskDetail: React.FC = () => {
     } catch (error) {
       toast({
         title: '取消失败',
+        description: error instanceof Error ? error.message : '请稍后重试',
+        variant: 'error',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!task || !reportData.reason) return;
+    setActionLoading(true);
+    try {
+      await taskApi.report(task.id, reportData);
+      setShowReportDialog(false);
+      setReportData({ reason: '', description: '' });
+      toast({ title: '举报提交成功，我们会尽快处理', variant: 'success' });
+    } catch (error) {
+      toast({
+        title: '举报失败',
         description: error instanceof Error ? error.message : '请稍后重试',
         variant: 'error',
       });
@@ -340,6 +361,16 @@ export const TaskDetail: React.FC = () => {
                 登录后接单
               </button>
             )}
+
+            {/* 举报按钮 */}
+            {isAuthenticated && task.status !== 'removed' && (
+              <button
+                onClick={() => setShowReportDialog(true)}
+                className="px-6 py-2 border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50 transition-colors"
+              >
+                举报违规
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -424,6 +455,57 @@ export const TaskDetail: React.FC = () => {
             className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
           >
             {actionLoading ? '提交中...' : '提交评价'}
+          </button>
+        </div>
+      </Dialog>
+
+      {/* 举报对话框 */}
+      <Dialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        title="举报任务"
+        description="请选择举报理由并提交"
+      >
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">举报理由</label>
+          <select
+            value={reportData.reason}
+            onChange={(e) => setReportData({ ...reportData, reason: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
+          >
+            <option value="">请选择举报理由</option>
+            {REPORT_REASONS.map((reason) => (
+              <option key={reason} value={reason}>
+                {reason}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">详细说明（可选）</label>
+          <textarea
+            value={reportData.description}
+            onChange={(e) => setReportData({ ...reportData, description: e.target.value })}
+            className="w-full h-24 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 resize-none"
+            placeholder="请详细描述违规情况..."
+          />
+        </div>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => {
+              setShowReportDialog(false);
+              setReportData({ reason: '', description: '' });
+            }}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleReport}
+            disabled={!reportData.reason || actionLoading}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+          >
+            {actionLoading ? '提交中...' : '提交举报'}
           </button>
         </div>
       </Dialog>
