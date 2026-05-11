@@ -5,6 +5,7 @@ import { Task, TASK_STATUS_MAP } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/ui/Toast';
 import { Dialog } from '../components/ui/Dialog';
+import { ReportDialog } from '../components/ReportDialog';
 
 export const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +14,7 @@ export const TaskDetail: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [submitContent, setSubmitContent] = useState('');
   const [reviewData, setReviewData] = useState({ rating: 5, content: '' });
   const { user, isAuthenticated } = useAuth();
@@ -331,6 +333,16 @@ export const TaskDetail: React.FC = () => {
               </button>
             )}
 
+            {/* 举报按钮 */}
+            {isAuthenticated && !isPublisher && task.status !== 'cancelled' && task.status !== 'completed' && (
+              <button
+                onClick={() => setShowReportDialog(true)}
+                className="px-6 py-2 border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50 transition-colors"
+              >
+                举报任务
+              </button>
+            )}
+
             {/* 未登录提示 */}
             {!isAuthenticated && task.status === 'pending' && (
               <button
@@ -427,6 +439,13 @@ export const TaskDetail: React.FC = () => {
           </button>
         </div>
       </Dialog>
+
+      {/* 举报对话框 */}
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        taskId={task.id}
+      />
     </div>
   );
 };

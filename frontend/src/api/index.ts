@@ -1,4 +1,4 @@
-import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review } from '../types';
+import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review, TaskReport } from '../types';
 
 const API_BASE = '/api';
 
@@ -125,6 +125,12 @@ export const taskApi = {
       body: JSON.stringify(data),
     }),
 
+  report: (id: number, data: { reason: string; description?: string }) =>
+    request<ApiResponse<TaskReport>>(`/tasks/${id}/report`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   getMyPublished: (params?: { page?: number; limit?: number; status?: string }) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -179,6 +185,12 @@ export const userApi = {
   },
 };
 
+// 举报API
+export const reportApi = {
+  getReasons: () =>
+    request<ApiResponse<string[]>>('/report/reasons'),
+};
+
 // 管理员API
 export const adminApi = {
   getUsers: (params?: { page?: number; limit?: number; search?: string }) => {
@@ -227,4 +239,34 @@ export const adminApi = {
       pending_tasks: number;
       completed_tasks: number;
     }>>('/admin/stats'),
+
+  getReports: (params?: { page?: number; limit?: number; status?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    return request<ApiResponse<PaginatedResponse<TaskReport>>>(`/admin/reports?${searchParams}`);
+  },
+
+  resolveReport: (id: number, handle_note?: string) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ handle_note }),
+    }),
+
+  rejectReport: (id: number, handle_note?: string) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ handle_note }),
+    }),
+
+  removeTaskByReport: (id: number, handle_note?: string) =>
+    request<ApiResponse<TaskReport>>(`/admin/reports/${id}/remove-task`, {
+      method: 'POST',
+      body: JSON.stringify({ handle_note }),
+    }),
 };

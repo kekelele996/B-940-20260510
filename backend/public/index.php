@@ -54,6 +54,7 @@ use App\Controllers\TaskController;
 use App\Controllers\UserController;
 use App\Controllers\ReviewController;
 use App\Controllers\AdminController;
+use App\Controllers\ReportController;
 
 // 获取请求路径和方法
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -92,6 +93,10 @@ $routes = [
   'GET /admin/users' => [AdminController::class, 'getUsers'],
   'GET /admin/tasks' => [AdminController::class, 'getTasks'],
   'GET /admin/stats' => [AdminController::class, 'getStats'],
+
+  // 举报路由
+  'GET /report/reasons' => [ReportController::class, 'getReasons'],
+  'GET /admin/reports' => [ReportController::class, 'getReports'],
 ];
 
 // 带参数的路由
@@ -111,6 +116,12 @@ $paramRoutes = [
 
   'PUT /admin/users/:id/status' => [AdminController::class, 'updateUserStatus'],
   'DELETE /admin/tasks/:id' => [AdminController::class, 'deleteTask'],
+
+  // 举报路由
+  'POST /tasks/:id/report' => [ReportController::class, 'create'],
+  'POST /admin/reports/:id/resolve' => [ReportController::class, 'resolve'],
+  'POST /admin/reports/:id/reject' => [ReportController::class, 'reject'],
+  'POST /admin/reports/:id/remove-task' => [ReportController::class, 'removeTask'],
 ];
 
 // 匹配路由
