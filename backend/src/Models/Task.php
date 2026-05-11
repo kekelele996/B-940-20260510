@@ -36,6 +36,10 @@ class Task
 
     $query = EloquentTask::with('publisher');
 
+    if (empty($filters['include_removed'])) {
+      $query->where('status', '!=', 'removed');
+    }
+
     if (!empty($filters['status'])) {
       $query->where('status', $filters['status']);
     }
