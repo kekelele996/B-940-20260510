@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     budget DECIMAL(10,2) NOT NULL,
     deadline DATE NOT NULL,
     skills JSON,
-    status ENUM('pending', 'in_progress', 'submitted', 'completed', 'cancelled') DEFAULT 'pending',
+    status ENUM('pending', 'in_progress', 'submitted', 'completed', 'cancelled', 'removed') DEFAULT 'pending',
     publisher_id INT NOT NULL,
     worker_id INT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -75,6 +75,24 @@ INSERT INTO users (username, password_hash, email, role, status) VALUES
 -- 密码哈希由 password_hash('123456', PASSWORD_BCRYPT) 生成
 INSERT INTO users (username, password_hash, email, role, status) VALUES
 ('testuser', '$2y$10$I67ZklvsKKaQxx17v95eSeP9g9oaalyVmaoJxao2CnatsuebvwNtq', 'test@tasksystem.com', 'user', 1);
+
+-- 举报表
+CREATE TABLE IF NOT EXISTS task_reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL,
+    reporter_id INT NOT NULL,
+    reason VARCHAR(100) NOT NULL,
+    description TEXT,
+    status ENUM('pending', 'resolved', 'rejected') DEFAULT 'pending',
+    admin_note TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_task (task_id),
+    INDEX idx_reporter (reporter_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 插入示例任务
 INSERT INTO tasks (title, description, category, budget, deadline, skills, status, publisher_id) VALUES

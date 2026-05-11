@@ -13,7 +13,33 @@ export interface User {
 }
 
 // 任务状态
-export type TaskStatus = 'pending' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
+export type TaskStatus = 'pending' | 'in_progress' | 'submitted' | 'completed' | 'cancelled' | 'removed';
+
+// 举报状态
+export type ReportStatus = 'pending' | 'resolved' | 'rejected';
+
+// 举报类型
+export interface TaskReport {
+  id: number;
+  task_id: number;
+  task_title?: string;
+  reporter_id: number;
+  reporter_name?: string;
+  reason: string;
+  description?: string;
+  status: ReportStatus;
+  admin_note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 举报统计
+export interface ReportStats {
+  pending: number;
+  resolved: number;
+  rejected: number;
+  total: number;
+}
 
 // 任务类型
 export interface Task {
@@ -99,5 +125,22 @@ export const TASK_STATUS_MAP: Record<TaskStatus, { label: string; color: string 
   in_progress: { label: '进行中', color: 'bg-blue-100 text-blue-700' },
   submitted: { label: '待验收', color: 'bg-yellow-100 text-yellow-700' },
   completed: { label: '已完成', color: 'bg-green-100 text-green-700' },
-  cancelled: { label: '已取消', color: 'bg-red-100 text-red-700' }
+  cancelled: { label: '已取消', color: 'bg-red-100 text-red-700' },
+  removed: { label: '已下架', color: 'bg-gray-200 text-gray-500' }
 };
+
+// 举报状态显示
+export const REPORT_STATUS_MAP: Record<ReportStatus, { label: string; color: string }> = {
+  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700' },
+  resolved: { label: '已处理', color: 'bg-green-100 text-green-700' },
+  rejected: { label: '已驳回', color: 'bg-gray-100 text-gray-700' }
+};
+
+// 举报理由选项
+export const REPORT_REASONS = [
+  '违规内容',
+  '虚假信息',
+  '诈骗行为',
+  '侵权内容',
+  '其他'
+] as const;
