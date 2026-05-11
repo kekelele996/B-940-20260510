@@ -91,6 +91,7 @@ $routes = [
   // 管理员路由
   'GET /admin/users' => [AdminController::class, 'getUsers'],
   'GET /admin/tasks' => [AdminController::class, 'getTasks'],
+  'GET /admin/reports' => [AdminController::class, 'getReports'],
   'GET /admin/stats' => [AdminController::class, 'getStats'],
 ];
 
@@ -104,6 +105,7 @@ $paramRoutes = [
   'POST /tasks/:id/complete' => [TaskController::class, 'complete'],
   'POST /tasks/:id/cancel' => [TaskController::class, 'cancel'],
   'POST /tasks/:id/review' => [ReviewController::class, 'create'],
+  'POST /tasks/:id/report' => [TaskController::class, 'report'],
 
   'GET /users/:id' => [UserController::class, 'show'],
   'PUT /users/:id' => [UserController::class, 'update'],
@@ -111,6 +113,7 @@ $paramRoutes = [
 
   'PUT /admin/users/:id/status' => [AdminController::class, 'updateUserStatus'],
   'DELETE /admin/tasks/:id' => [AdminController::class, 'deleteTask'],
+  'PUT /admin/reports/:id' => [AdminController::class, 'handleReport'],
 ];
 
 // 匹配路由

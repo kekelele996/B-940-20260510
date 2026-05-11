@@ -1,4 +1,4 @@
-import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review } from '../types';
+import { ApiResponse, LoginResponse, User, Task, PaginatedResponse, Review, Report } from '../types';
 
 const API_BASE = '/api';
 
@@ -151,6 +151,12 @@ export const taskApi = {
 
   getCategories: () =>
     request<ApiResponse<string[]>>('/tasks/categories'),
+
+  report: (id: number, data: { reason: string; description?: string }) =>
+    request<ApiResponse>(`/tasks/${id}/report`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // 用户API
@@ -219,6 +225,24 @@ export const adminApi = {
 
   deleteTask: (id: number) =>
     request<ApiResponse>(`/admin/tasks/${id}`, { method: 'DELETE' }),
+
+  getReports: (params?: { page?: number; limit?: number; status?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    return request<ApiResponse<PaginatedResponse<Report>>>(`/admin/reports?${searchParams}`);
+  },
+
+  handleReport: (id: number, data: { action: 'resolved' | 'rejected'; admin_note?: string }) =>
+    request<ApiResponse<Report>>(`/admin/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 
   getStats: () =>
     request<ApiResponse<{

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Task;
 use App\Models\TaskSubmission;
 use App\Models\Review;
+use App\Models\Report;
 use App\Middleware\AuthMiddleware;
 use App\Utils\Response;
 
@@ -13,12 +14,14 @@ class TaskController
   private Task $taskModel;
   private TaskSubmission $submissionModel;
   private Review $reviewModel;
+  private Report $reportModel;
 
   public function __construct()
   {
     $this->taskModel = new Task();
     $this->submissionModel = new TaskSubmission();
     $this->reviewModel = new Review();
+    $this->reportModel = new Report();
   }
 
   public function index(): void
@@ -273,5 +276,36 @@ class TaskController
 
     $result = $this->taskModel->getAll($filters);
     Response::success($result);
+  }
+
+  public function report(int $id): void
+  {
+    $auth = AuthMiddleware::requireAuth();
+    $task = $this->taskModel->findById($id);
+
+    if (!$task) {
+      Response::error('任务不存在', 404);
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $validReasons = ['fraud', 'illegal', 'spam', 'inappropriate', 'other'];
+    if (empty($data['reason']) || !in_array($data['reason'], $validReasons)) {
+      Response::error('请选择有效的举报理由');
+    }
+
+    $existing = $this->reportModel->findByTaskAndReporter($id, $auth['user_id']);
+    if ($existing) {
+      Response::error('您已举报过该任务，请等待处理');
+    }
+
+    $this->reportModel->create([
+      'task_id' => $id,
+      'reporter_id' => $auth['user_id'],
+      'reason' => $data['reason'],
+      'description' => $data['description'] ?? null,
+    ]);
+
+    Response::success(null, '举报已提交，我们会尽快处理');
   }
 }

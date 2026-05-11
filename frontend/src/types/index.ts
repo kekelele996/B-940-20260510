@@ -84,6 +84,40 @@ export interface LoginResponse {
 }
 
 // 任务分类
+export type ReportReason = 'fraud' | 'illegal' | 'spam' | 'inappropriate' | 'other';
+
+export type ReportStatus = 'pending' | 'resolved' | 'rejected';
+
+export interface Report {
+  id: number;
+  task_id: number;
+  reporter_id: number;
+  reason: ReportReason;
+  description?: string;
+  status: ReportStatus;
+  admin_note?: string;
+  handled_by?: number;
+  task_title?: string;
+  reporter_name?: string;
+  handler_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const REPORT_REASON_MAP: Record<ReportReason, string> = {
+  fraud: '欺诈/虚假信息',
+  illegal: '违法违规内容',
+  spam: '垃圾/广告信息',
+  inappropriate: '不当/冒犯性内容',
+  other: '其他原因',
+};
+
+export const REPORT_STATUS_MAP: Record<ReportStatus, { label: string; color: string }> = {
+  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700' },
+  resolved: { label: '已下架', color: 'bg-red-100 text-red-700' },
+  rejected: { label: '已驳回', color: 'bg-gray-100 text-gray-700' },
+};
+
 export const TASK_CATEGORIES = [
   '技术开发',
   '设计创意',

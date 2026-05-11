@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\User;
 use App\Models\Task;
+use App\Models\Report;
 use App\Middleware\AuthMiddleware;
 use App\Utils\Response;
 
@@ -11,11 +12,13 @@ class AdminController
 {
   private User $userModel;
   private Task $taskModel;
+  private Report $reportModel;
 
   public function __construct()
   {
     $this->userModel = new User();
     $this->taskModel = new Task();
+    $this->reportModel = new Report();
   }
 
   public function getUsers(): void
@@ -114,5 +117,55 @@ class AdminController
     $stats['completed_tasks'] = (int) $stmt->fetch()['count'];
 
     Response::success($stats);
+  }
+
+  public function getReports(): void
+  {
+    AuthMiddleware::requireAdmin();
+
+    $filters = [
+      'page' => (int) ($_GET['page'] ?? 1),
+      'limit' => (int) ($_GET['limit'] ?? 10),
+      'status' => $_GET['status'] ?? null,
+    ];
+
+    $result = $this->reportModel->getAll($filters);
+    Response::success($result);
+  }
+
+  public function handleReport(int $id): void
+  {
+    $auth = AuthMiddleware::requireAdmin();
+
+    $report = $this->reportModel->findById($id);
+    if (!$report) {
+      Response::error('举报记录不存在', 404);
+    }
+
+    if ($report['status'] !== 'pending') {
+      Response::error('该举报已处理');
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+    $action = $data['action'] ?? null;
+
+    if (!in_array($action, ['resolved', 'rejected'])) {
+      Response::error('无效的操作类型');
+    }
+
+    $updateData = [
+      'status' => $action,
+      'handled_by' => $auth['user_id'],
+      'admin_note' => $data['admin_note'] ?? null,
+    ];
+
+    $this->reportModel->update($id, $updateData);
+
+    if ($action === 'resolved') {
+      $this->taskModel->updateStatus($report['task_id'], 'cancelled');
+    }
+
+    $updated = $this->reportModel->findById($id);
+    Response::success($updated, $action === 'resolved' ? '已下架任务' : '已驳回举报');
   }
 }
